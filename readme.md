@@ -17,7 +17,7 @@ This section is based off these articles:
 
 Install `Bash` if you don't already have it as part of Git.
 
-In `Bash` navigate to the root docker-compose directory for this repo.
+In `Bash` navigate to the root directory for this repo (or the folder contianing your docker-compose).
 
 > mkdir ssl && cd ssl
 
@@ -25,13 +25,13 @@ Generate private key.
 
 > openssl genrsa -out local.keycloak.key
 
-Generate CSR and private key files by running the following commands.
+Generate CSR and private key files by running the following command, and fill in the details with the FQDN as `localhost`.
 
 > openssl req -new -key local.keycloak.key -out local.keycloak.csr
 
 Sign the certificate using a private key and CSR:
 
-> openssl x509 -req -in local.keycloak.csr -signkey local.keycloak.key -days 36500 -out local.keycloak.crt.
+> openssl x509 -req -in local.keycloak.csr -signkey local.keycloak.key -days 36500 -out local.keycloak.crt
 
 Update your volumes int `docker-compose.keycloak.yml` to point at the local certificate:
 >  - ./ssl/local.keycloak.crt:/opt/keycloak/conf/server.crt
