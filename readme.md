@@ -9,7 +9,7 @@ This repo contains common docker-compose files useful for my local development t
 * Keycloak - Auth and permissions server
 
 ## Keycloak Setup (Windows)
-For local keycloak to work properly as an OIDC server with another application, it needs to be running HTTPS with a valid, trusted certificate, otherwise you will recieve an SSL error at runtime. To support this, you will need to generate a certificate for localhost and add it to trusted root, and load this certificate into Keycloak.
+For local keycloak to work properly as an OIDC server with another application, it needs to be running HTTPS with a valid, trusted certificate, otherwise you will recieve an SSL error at runtime. To support this, you will need to generate a certificate for localhost/host.docker.internal and add it to trusted root, and load this certificate into Keycloak.
 
 This section is based off these articles: 
 * https://cloudspinx.com/run-keycloak-in-docker-or-podman-with-lets-encrypt-ssl/
@@ -25,15 +25,18 @@ Generate private key.
 
 > openssl genrsa -out local.keycloak.key
 
-Generate CSR and private key files by running the following command, and fill in the details with the FQDN as `localhost`.
+Generate and sign certificate using a private key:
 
-> openssl req -new -key local.keycloak.key -out local.keycloak.csr
+> openssl req -x509 -new -key local.keycloak.key -days 36500 -subj /CN=localhost -addext subjectAltName=DNS:localhost,DNS:host.docker.internal,IP:127.0.0.1 -out local.keycloak.crt
 
-Sign the certificate using a private key and CSR:
+Note: the /CN=localhost format can be environment dependent and need either escaping via // or "//CN=localhost".
 
-> openssl x509 -req -in local.keycloak.csr -signkey local.keycloak.key -days 36500 -out local.keycloak.crt
+Verify the certificate has the expected Subject Alternative Names:
 
-Update your volumes int `docker-compose.keycloak.yml` to point at the local certificate:
+> openssl x509 -in local.keycloak.crt -noout -ext subjectAltName
+> DNS:localhost, DNS:host.docker.internal, IP Address:127.0.0.1
+
+Update your volumes in `docker-compose.keycloak.yml` to point at the local certificate:
 >  - ./ssl/local.keycloak.crt:/opt/keycloak/conf/server.crt
 >  - ./ssl/local.keycloak.key:/opt/keycloak/conf/server.key
 
@@ -48,7 +51,7 @@ Finally, import the SSL Certificate into your `Trusted Root Certification Author
 Url: https://localhost:5030
 
 ### Postgres (PgAdmin)
-Adminer: https://localhost:8443
+Adminer: https://localhost:5134
 Username: user@local.com
 Password: password
 
