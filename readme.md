@@ -40,7 +40,19 @@ Update your volumes in `docker-compose.keycloak.yml` to point at the local certi
 >  - ./ssl/local.keycloak.crt:/opt/keycloak/conf/server.crt
 >  - ./ssl/local.keycloak.key:/opt/keycloak/conf/server.key
 
-Finally, import the SSL Certificate into your `Trusted Root Certification Authorities` via the `MMC.exe` => `Certificates` plugin. 
+### Registering Cert on host
+
+```bat
+   certutil -addstore Root \ssl\local.keycloak.crt
+ ```
+
+ Or import the SSL Certificate into your `Trusted Root Certification Authorities` via the `MMC.exe` => `Certificates` plugin. 
+
+ Verify it landed (no admin needed):
+
+ ```bat
+   certutil -store Root | findstr /i "localhost"
+ ```
 
 ## To Run
 `docker compose -f docker-compose.wiremock.yml -f docker-compose.seq.yml -f docker-compose.postgres.yml -f docker-compose.keycloak.yml up`
